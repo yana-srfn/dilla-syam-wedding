@@ -128,14 +128,61 @@ export default function WeddingGallery() {
     link.click();
   }
 
-  function uploadMemory() {
-    if (!preview) return;
+  async function uploadMemory() {
+  if (!preview) return;
 
-    setGallery((prev) => [preview, ...prev]);
-    setPreview(null);
+  try {
+    const response = await fetch(preview.url);
+    const blob = await response.blob();
 
-    alert("Uploaded to gallery 🌸");
+    const reader = new FileReader();
+
+    reader.readAsDataURL(blob);
+
+    reader.onloadend = async () => {
+      const base64data = reader.result?.toString().split(",")[1];
+
+      const uploadResponse = await fetch(
+        "https://script.google.com/macros/s/AKfycbwh-eyLYkXDifHmNV0Tn3BDpiUHFX69hO2eQwJ0txCq9T5aWBZ2z2NZNqxY7bJv-3sHjQ/exec",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            fileName:
+              preview.type === "image"
+                ? `memory-${Date.now()}.jpg`
+                : `memory-${Date.now()}.webm`,
+            mimeType:
+              preview.type === "image"
+                ? "image/jpeg"
+                : "video/webm",
+            fileData: base64data,
+          }),
+        }
+      );
+
+      const result = await uploadResponse.json();
+
+      if (result.success) {
+        setGallery((prev) => [
+          {
+            ...preview,
+            url: result.fileUrl,
+          },
+          ...prev,
+        ]);
+
+        alert("Uploaded successfully 🌸");
+        setPreview(null);
+      } else {
+        alert("Upload failed");
+        console.log(result.error);
+      }
+    };
+  } catch (error) {
+    console.log(error);
+    alert("Something went wrong");
   }
+}
 
   if (page === "home") {
     return (
