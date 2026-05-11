@@ -40,7 +40,7 @@ export default function WeddingGallery() {
       const formatted = data.map((item: any) => ({
         id: item.id,
         type: item.mimeType.includes("video") ? "video" : "image",
-        url: item.downloadUrl,
+        url: item.url,
       }));
 
       setGallery(formatted);
