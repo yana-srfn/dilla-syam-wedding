@@ -213,7 +213,7 @@ export default function WeddingGallery() {
     return (
       <main className="min-h-screen bg-[#fff9ef] px-4 py-8 text-stone-700">
         <div className="mx-auto flex min-h-[90vh] max-w-5xl flex-col items-center justify-center text-center">
-          <p className="mb-4 text-xs tracking-[0.25em] text-[#9cab97] uppercase sm:text-sm">
+          <p className="mb-4 text-xs tracking-[0.25em] text-[#fc6f7f] uppercase sm:text-sm">
             Wedding Memory Garden
           </p>
 
