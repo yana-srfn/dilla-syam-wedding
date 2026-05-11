@@ -14,6 +14,7 @@ export default function WeddingGallery() {
   const [preview, setPreview] = useState<MemoryItem | null>(null);
   const [gallery, setGallery] = useState<MemoryItem[]>([]);
   const [recording, setRecording] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -97,6 +98,8 @@ export default function WeddingGallery() {
         type: "video",
         url,
       });
+
+      setRecording(false);
     };
 
     recorder.start();
@@ -129,60 +132,54 @@ export default function WeddingGallery() {
   }
 
   async function uploadMemory() {
-  if (!preview) return;
+    if (!preview || uploading) return;
 
-  try {
-    const response = await fetch(preview.url);
-    const blob = await response.blob();
+    setUploading(true);
 
-    const reader = new FileReader();
+    try {
+      const response = await fetch(preview.url);
+      const blob = await response.blob();
 
-    reader.readAsDataURL(blob);
+      const reader = new FileReader();
 
-    reader.onloadend = async () => {
-      const base64data = reader.result?.toString().split(",")[1];
+      reader.onloadend = async () => {
+        const base64data = reader.result?.toString().split(",")[1];
 
-      const uploadResponse = await fetch(
-        "https://script.google.com/macros/s/AKfycbwh-eyLYkXDifHmNV0Tn3BDpiUHFX69hO2eQwJ0txCq9T5aWBZ2z2NZNqxY7bJv-3sHjQ/exec",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            fileName:
-              preview.type === "image"
-                ? `memory-${Date.now()}.jpg`
-                : `memory-${Date.now()}.webm`,
-            mimeType:
-              preview.type === "image"
-                ? "image/jpeg"
-                : "video/webm",
-            fileData: base64data,
-          }),
-        }
-      );
-
-      const result = await uploadResponse.json();
-
-      if (result.success) {
-        setGallery((prev) => [
+        const uploadResponse = await fetch(
+          "https://script.google.com/macros/s/AKfycbwh-eyLYkXDifHmNV0Tn3BDpiUHFX69hO2eQwJ0txCq9T5aWBZ2z2NZNqxY7bJv-3sHjQ/exec",
           {
-            ...preview,
-            url: result.fileUrl,
-          },
-          ...prev,
-        ]);
+            method: "POST",
+            body: JSON.stringify({
+              fileName:
+                preview.type === "image"
+                  ? `memory-${Date.now()}.jpg`
+                  : `memory-${Date.now()}.webm`,
+              mimeType: preview.type === "image" ? "image/jpeg" : "video/webm",
+              fileData: base64data,
+            }),
+          }
+        );
 
-        alert("Uploaded successfully 🌸");
-        setPreview(null);
-      } else {
-        alert("Upload failed");
-        console.log(result.error);
-      }
-    };
-  } catch (error) {
-    console.log(error);
-    alert("Something went wrong");
+        const result = await uploadResponse.json();
+
+        if (result.success) {
+          setGallery((prev) => [preview, ...prev]);
+          setPreview(null);
+          alert("Uploaded successfully 🌸");
+        } else {
+          alert("Upload failed");
+        }
+
+        setUploading(false);
+      };
+
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.log(error);
+      alert("Something went wrong");
+      setUploading(false);
+    }
   }
-}
 
   if (page === "home") {
     return (
@@ -336,14 +333,16 @@ export default function WeddingGallery() {
 
                   <button
                     onClick={uploadMemory}
-                    className="rounded-2xl bg-[#b7c4b2] px-6 py-4 font-medium text-white"
+                    disabled={uploading}
+                    className="rounded-2xl bg-[#b7c4b2] px-6 py-4 font-medium text-white disabled:opacity-50"
                   >
-                    Upload to Live Gallery
+                    {uploading ? "Uploading..." : "Upload to Live Gallery"}
                   </button>
 
                   <button
                     onClick={() => setPreview(null)}
-                    className="rounded-2xl bg-stone-100 px-6 py-4 font-medium"
+                    disabled={uploading}
+                    className="rounded-2xl bg-stone-100 px-6 py-4 font-medium disabled:opacity-50"
                   >
                     Retake
                   </button>
