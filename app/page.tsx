@@ -230,7 +230,6 @@ export default function WeddingGallery() {
             </span>
 
             <br />
-            <br />
 
             <span className="text-[#7d9278]">
               Help us capture every little moment & upload your photos to our wedding gallery in real time! ✨
