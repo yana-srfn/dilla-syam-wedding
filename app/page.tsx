@@ -30,44 +30,44 @@ export default function WeddingGallery() {
   }, [stream]);
 
   useEffect(() => {
-  async function fetchGallery() {
-    try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwh-eyLYkXDifHmNV0Tn3BDpiUHFX69hO2eQwJ0txCq9T5aWBZ2z2NZNqxY7bJv-3sHjQ/exec"
-      );
+    async function fetchGallery() {
+      try {
+        const response = await fetch(
+          "https://script.google.com/macros/s/AKfycbwh-eyLYkXDifHmNV0Tn3BDpiUHFX69hO2eQwJ0txCq9T5aWBZ2z2NZNqxY7bJv-3sHjQ/exec"
+        );
 
-      const data = await response.json();
+        const data = await response.json();
 
-      const formatted = data.map((item: any) => ({
-        id: item.id,
-        type: item.mimeType.includes("video") ? "video" : "image",
-        url: item.url,
-      }));
+        const formatted = data.map((item: any) => ({
+          id: item.id,
+          type: item.mimeType.includes("video") ? "video" : "image",
+          url: item.url,
+        }));
 
-      setGallery(formatted);
-    } catch (error) {
-      console.log(error);
+        setGallery(formatted);
+      } catch (error) {
+        console.log(error);
+      }
     }
 
-    useEffect(() => {
-  if (gallery.length === 0) return;
+    fetchGallery();
 
-  const interval = setInterval(() => {
-    setCurrentIndex((prev) =>
-      prev === gallery.length - 1 ? 0 : prev + 1
-    );
-  }, 5000);
+    const interval = setInterval(fetchGallery, 5000);
 
-  return () => clearInterval(interval);
-}, [gallery]);
-  }
+    return () => clearInterval(interval);
+  }, []);
 
-  fetchGallery();
+  useEffect(() => {
+    if (gallery.length === 0) return;
 
-  const interval = setInterval(fetchGallery, 5000);
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) =>
+        prev === gallery.length - 1 ? 0 : prev + 1
+      );
+    }, 5000);
 
-  return () => clearInterval(interval);
-}, []);
+    return () => clearInterval(interval);
+  }, [gallery]);
 
   async function openCamera(videoMode = false) {
     try {
@@ -90,12 +90,14 @@ export default function WeddingGallery() {
     if (!videoRef.current) return;
 
     const video = videoRef.current;
+
     const canvas = document.createElement("canvas");
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext("2d");
+
     if (!ctx) return;
 
     ctx.drawImage(video, 0, 0);
@@ -119,6 +121,7 @@ export default function WeddingGallery() {
     chunksRef.current = [];
 
     const recorder = new MediaRecorder(stream);
+
     recorderRef.current = recorder;
 
     recorder.ondataavailable = (event) => {
@@ -144,6 +147,7 @@ export default function WeddingGallery() {
     };
 
     recorder.start();
+
     setRecording(true);
 
     setTimeout(() => {
@@ -164,6 +168,7 @@ export default function WeddingGallery() {
     const link = document.createElement("a");
 
     link.href = preview.url;
+
     link.download =
       preview.type === "image"
         ? "dilla-syam-memory.jpg"
@@ -179,6 +184,7 @@ export default function WeddingGallery() {
 
     try {
       const response = await fetch(preview.url);
+
       const blob = await response.blob();
 
       const reader = new FileReader();
@@ -195,7 +201,10 @@ export default function WeddingGallery() {
                 preview.type === "image"
                   ? `memory-${Date.now()}.jpg`
                   : `memory-${Date.now()}.webm`,
-              mimeType: preview.type === "image" ? "image/jpeg" : "video/webm",
+              mimeType:
+                preview.type === "image"
+                  ? "image/jpeg"
+                  : "video/webm",
               fileData: base64data,
             }),
           }
@@ -204,9 +213,9 @@ export default function WeddingGallery() {
         const result = await uploadResponse.json();
 
         if (result.success) {
-          setGallery((prev) => [preview, ...prev]);
-          setPreview(null);
           alert("Uploaded successfully 🌸");
+
+          setPreview(null);
         } else {
           alert("Upload failed");
         }
@@ -217,19 +226,20 @@ export default function WeddingGallery() {
       reader.readAsDataURL(blob);
     } catch (error) {
       console.log(error);
+
       alert("Something went wrong");
+
       setUploading(false);
     }
   }
 
   if (page === "home") {
     return (
-      <main className="min-h-screen bg-[#fff9ef] px-4 py-8 text-stone-700">
+      <main className="min-h-screen bg-[#fffaf6] px-4 py-8 text-stone-700">
         <div className="mx-auto flex min-h-[90vh] max-w-5xl flex-col items-center justify-center text-center">
           <p className="mb-4 text-xs tracking-[0.25em] text-[#fca2be] uppercase sm:text-sm">
             Wedding Memory Garden
           </p>
-
 
           <h1 className="font-serif text-5xl leading-tight sm:text-7xl md:text-8xl">
             <span className="text-[#ffe88d]">Dilla</span>{" "}
@@ -239,20 +249,23 @@ export default function WeddingGallery() {
 
           <p className="mt-5 max-w-2xl text-center text-base leading-8 sm:text-lg">
             <span className="text-[#ffa384]">
-              Warning: This website may contain excessive love, flowers, happy tears & questionable people 🌸🕺
+              Warning: This website may contain excessive love, flowers,
+              happy tears & questionable people 🌸🕺
             </span>
 
             <br />
+            <br />
 
             <span className="text-[#ffa384]">
-              Help us capture every little moment & upload your photos to our wedding gallery in real time! ✨
+              Help us capture every little moment & upload your photos to
+              our wedding gallery in real time! ✨
             </span>
           </p>
 
           <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <button
               onClick={() => setPage("camera")}
-              className="w-full rounded-full bg-[#ffdab5] px-8 py-4 text-base font-medium text-white shadow-lg transition hover:bg-[#9cab97] sm:w-auto"
+              className="w-full rounded-full bg-[#ffdab5] px-8 py-4 text-base font-medium text-white shadow-lg transition hover:bg-[#ffc99c] sm:w-auto"
             >
               Capture a Memory
             </button>
@@ -387,7 +400,9 @@ export default function WeddingGallery() {
                     disabled={uploading}
                     className="rounded-2xl bg-[#b7c4b2] px-6 py-4 font-medium text-white disabled:opacity-50"
                   >
-                    {uploading ? "Uploading..." : "Upload to Live Gallery"}
+                    {uploading
+                      ? "Uploading..."
+                      : "Upload to Live Gallery"}
                   </button>
 
                   <button
@@ -428,49 +443,50 @@ export default function WeddingGallery() {
           Memories uploaded by guests 🌸
         </p>
       </div>
-      <div className="mx-auto mt-10 flex max-w-5xl items-center justify-center">
-  {gallery.length === 0 ? (
-    <div className="rounded-[2rem] bg-white/70 p-10 text-center shadow-lg">
-      <p className="text-stone-500">
-        No memories uploaded yet 🌸
-      </p>
-    </div>
-  ) : (
-    <div className="relative w-full overflow-hidden rounded-[2rem] bg-white p-4 shadow-2xl">
-      {gallery[currentIndex]?.type === "image" ? (
-        <img
-          src={gallery[currentIndex].url}
-          alt="Wedding memory"
-          referrerPolicy="no-referrer"
-          className="h-[70vh] w-full rounded-[1.5rem] object-cover transition-all duration-1000"
-        />
-      ) : (
-        <video
-          src={gallery[currentIndex].url}
-          autoPlay
-          muted
-          loop
-          playsInline
-          controls={false}
-          className="h-[70vh] w-full rounded-[1.5rem] object-cover"
-        />
-      )}
 
-      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
-        {gallery.map((_, index) => (
-          <div
-            key={index}
-            className={`h-2 w-2 rounded-full ${
-              index === currentIndex
-                ? "bg-white"
-                : "bg-white/40"
-            }`}
-          />
-        ))}
+      <div className="mx-auto mt-10 flex max-w-5xl items-center justify-center">
+        {gallery.length === 0 ? (
+          <div className="rounded-[2rem] bg-white/70 p-10 text-center shadow-lg">
+            <p className="text-stone-500">
+              No memories uploaded yet 🌸
+            </p>
+          </div>
+        ) : (
+          <div className="relative w-full overflow-hidden rounded-[2rem] bg-white p-4 shadow-2xl">
+            {gallery[currentIndex]?.type === "image" ? (
+              <img
+                src={gallery[currentIndex].url}
+                alt="Wedding memory"
+                referrerPolicy="no-referrer"
+                className="h-[70vh] w-full rounded-[1.5rem] object-cover transition-all duration-1000"
+              />
+            ) : (
+              <video
+                src={gallery[currentIndex].url}
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls={false}
+                className="h-[70vh] w-full rounded-[1.5rem] object-cover"
+              />
+            )}
+
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
+              {gallery.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-2 w-2 rounded-full ${
+                    index === currentIndex
+                      ? "bg-white"
+                      : "bg-white/40"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  )}
-</div>
     </main>
   );
 }
