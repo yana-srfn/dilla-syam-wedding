@@ -213,23 +213,23 @@ export default function WeddingGallery() {
     return (
       <main className="min-h-screen bg-[#fff9ef] px-4 py-8 text-stone-700">
         <div className="mx-auto flex min-h-[90vh] max-w-5xl flex-col items-center justify-center text-center">
-          <p className="mb-4 text-xs tracking-[0.25em] text-[#fc6f7f] uppercase sm:text-sm">
+          <p className="mb-4 text-xs tracking-[0.25em] text-[#fca2be] uppercase sm:text-sm">
             Wedding Memory Garden
           </p>
 
           <h1 className="font-serif text-5xl leading-tight text-stone-800 sm:text-7xl md:text-8xl">
-            Dilla <span className="text-[#b7c4b2]">&</span> Syam
+            Dilla <span className="text-[#ffdab5]">&</span> Syam
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-7 text-stone-600 sm:text-lg">
-            Capture sweet moments, upload memories, and watch them appear live
-            during the wedding celebration 🌸
+            Warning: This website may contain excessive love, flowers, happy tears & questionable people 🌸🕺
+            Help us capture every little moment & upload your photos to our wedding gallery in real time! ✨
           </p>
 
           <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <button
               onClick={() => setPage("camera")}
-              className="w-full rounded-full bg-[#b7c4b2] px-8 py-4 text-base font-medium text-white shadow-lg transition hover:bg-[#9cab97] sm:w-auto"
+              className="w-full rounded-full bg-[#ffdab5] px-8 py-4 text-base font-medium text-white shadow-lg transition hover:bg-[#9cab97] sm:w-auto"
             >
               Capture a Memory
             </button>
