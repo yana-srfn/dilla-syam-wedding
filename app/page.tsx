@@ -224,11 +224,6 @@ export default function WeddingGallery() {
             <span className="text-[#d1eff9]">Syam</span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-base leading-7 text-stone-600 sm:text-lg">
-            Warning: This website may contain excessive love, flowers, happy tears & questionable people 🌸🕺
-            Help us capture every little moment & upload your photos to our wedding gallery in real time! ✨
-          </p>
-
           <p className="mt-5 max-w-2xl text-center text-base leading-8 sm:text-lg">
             <span className="text-[#c99789]">
               Warning: This website may contain excessive love, flowers, happy tears & questionable people 🌸🕺
