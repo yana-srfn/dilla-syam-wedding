@@ -219,9 +219,9 @@ export default function WeddingGallery() {
 
 
           <h1 className="font-serif text-5xl leading-tight sm:text-7xl md:text-8xl">
-            <span className="text-[#d8b4a0]">Dilla</span>{" "}
+            <span className="text-[#ffe88d]">Dilla</span>{" "}
             <span className="text-[#ffdab5]">&</span>{" "}
-            <span className="text-[#9cab97]">Syam</span>
+            <span className="text-[#d1eff9]">Syam</span>
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-7 text-stone-600 sm:text-lg">
