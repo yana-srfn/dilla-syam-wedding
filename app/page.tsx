@@ -15,6 +15,7 @@ export default function WeddingGallery() {
   const [gallery, setGallery] = useState<MemoryItem[]>([]);
   const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -47,6 +48,18 @@ export default function WeddingGallery() {
     } catch (error) {
       console.log(error);
     }
+
+    useEffect(() => {
+  if (gallery.length === 0) return;
+
+  const interval = setInterval(() => {
+    setCurrentIndex((prev) =>
+      prev === gallery.length - 1 ? 0 : prev + 1
+    );
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, [gallery]);
   }
 
   fetchGallery();
@@ -415,35 +428,49 @@ export default function WeddingGallery() {
           Memories uploaded by guests 🌸
         </p>
       </div>
+      <div className="mx-auto mt-10 flex max-w-5xl items-center justify-center">
+  {gallery.length === 0 ? (
+    <div className="rounded-[2rem] bg-white/70 p-10 text-center shadow-lg">
+      <p className="text-stone-500">
+        No memories uploaded yet 🌸
+      </p>
+    </div>
+  ) : (
+    <div className="relative w-full overflow-hidden rounded-[2rem] bg-white p-4 shadow-2xl">
+      {gallery[currentIndex]?.type === "image" ? (
+        <img
+          src={gallery[currentIndex].url}
+          alt="Wedding memory"
+          referrerPolicy="no-referrer"
+          className="h-[70vh] w-full rounded-[1.5rem] object-cover transition-all duration-1000"
+        />
+      ) : (
+        <video
+          src={gallery[currentIndex].url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          controls={false}
+          className="h-[70vh] w-full rounded-[1.5rem] object-cover"
+        />
+      )}
 
-      <div className="mx-auto mt-8 grid max-w-6xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {gallery.length === 0 && (
-          <div className="col-span-full rounded-[2rem] bg-white/70 p-8 text-center shadow">
-            <p className="text-stone-500">No memories uploaded yet 🌸</p>
-          </div>
-        )}
-
-        {gallery.map((item) => (
+      <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
+        {gallery.map((_, index) => (
           <div
-            key={item.id}
-            className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-lg"
-          >
-            {item.type === "image" ? (
-              <img
-                src={item.url}
-                alt="Wedding memory"
-                className="h-[320px] w-full rounded-[1.5rem] object-cover sm:h-[350px]"
-              />
-            ) : (
-              <video
-                src={item.url}
-                controls
-                className="h-[320px] w-full rounded-[1.5rem] object-cover sm:h-[350px]"
-              />
-            )}
-          </div>
+            key={index}
+            className={`h-2 w-2 rounded-full ${
+              index === currentIndex
+                ? "bg-white"
+                : "bg-white/40"
+            }`}
+          />
         ))}
       </div>
+    </div>
+  )}
+</div>
     </main>
   );
 }
