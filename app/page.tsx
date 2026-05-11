@@ -217,13 +217,29 @@ export default function WeddingGallery() {
             Wedding Memory Garden
           </p>
 
-          <h1 className="font-serif text-5xl leading-tight text-stone-800 sm:text-7xl md:text-8xl">
-            Dilla <span className="text-[#ffdab5]">&</span> Syam
+
+          <h1 className="font-serif text-5xl leading-tight sm:text-7xl md:text-8xl">
+            <span className="text-[#d8b4a0]">Dilla</span>{" "}
+            <span className="text-[#ffdab5]">&</span>{" "}
+            <span className="text-[#9cab97]">Syam</span>
           </h1>
 
           <p className="mt-5 max-w-xl text-base leading-7 text-stone-600 sm:text-lg">
             Warning: This website may contain excessive love, flowers, happy tears & questionable people 🌸🕺
             Help us capture every little moment & upload your photos to our wedding gallery in real time! ✨
+          </p>
+
+          <p className="mt-5 max-w-2xl text-center text-base leading-8 sm:text-lg">
+            <span className="text-[#c99789]">
+              Warning: This website may contain excessive love, flowers, happy tears & questionable people 🌸🕺
+            </span>
+
+            <br />
+            <br />
+
+            <span className="text-[#7d9278]">
+              Help us capture every little moment & upload your photos to our wedding gallery in real time! ✨
+            </span>
           </p>
 
           <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
