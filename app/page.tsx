@@ -28,6 +28,34 @@ export default function WeddingGallery() {
     };
   }, [stream]);
 
+  useEffect(() => {
+  async function fetchGallery() {
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbwh-eyLYkXDifHmNV0Tn3BDpiUHFX69hO2eQwJ0txCq9T5aWBZ2z2NZNqxY7bJv-3sHjQ/exec"
+      );
+
+      const data = await response.json();
+
+      const formatted = data.map((item: any) => ({
+        id: item.id,
+        type: item.mimeType.includes("video") ? "video" : "image",
+        url: item.downloadUrl,
+      }));
+
+      setGallery(formatted);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  fetchGallery();
+
+  const interval = setInterval(fetchGallery, 5000);
+
+  return () => clearInterval(interval);
+}, []);
+
   async function openCamera(videoMode = false) {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
