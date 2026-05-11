@@ -251,7 +251,7 @@ export default function WeddingGallery() {
           </div>
 
           <p className="mt-6 text-xs text-stone-500 sm:text-sm">
-            12 October 2026 · #DillaSyamForever
+            4 October 2026 · #DillaSyamForever
           </p>
         </div>
       </main>
