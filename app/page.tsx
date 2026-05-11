@@ -1,65 +1,365 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+import { useEffect, useRef, useState } from "react";
+
+type MemoryItem = {
+  id: string;
+  type: "image" | "video";
+  url: string;
+};
+
+export default function WeddingGallery() {
+  const [page, setPage] = useState<"home" | "camera" | "gallery">("home");
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [preview, setPreview] = useState<MemoryItem | null>(null);
+  const [gallery, setGallery] = useState<MemoryItem[]>([]);
+  const [recording, setRecording] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [stream]);
+
+  async function openCamera(videoMode = false) {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: videoMode,
+      });
+
+      setStream(mediaStream);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch {
+      alert("Please allow camera permissions.");
+    }
+  }
+
+  function takePhoto() {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+
+      const url = URL.createObjectURL(blob);
+
+      setPreview({
+        id: crypto.randomUUID(),
+        type: "image",
+        url,
+      });
+    }, "image/jpeg");
+  }
+
+  function startRecording() {
+    if (!stream) return;
+
+    chunksRef.current = [];
+
+    const recorder = new MediaRecorder(stream);
+    recorderRef.current = recorder;
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunksRef.current.push(event.data);
+      }
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, {
+        type: "video/webm",
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      setPreview({
+        id: crypto.randomUUID(),
+        type: "video",
+        url,
+      });
+    };
+
+    recorder.start();
+    setRecording(true);
+
+    setTimeout(() => {
+      stopRecording();
+    }, 10000);
+  }
+
+  function stopRecording() {
+    if (recorderRef.current?.state === "recording") {
+      recorderRef.current.stop();
+      setRecording(false);
+    }
+  }
+
+  function saveToPhone() {
+    if (!preview) return;
+
+    const link = document.createElement("a");
+
+    link.href = preview.url;
+    link.download =
+      preview.type === "image"
+        ? "dilla-syam-memory.jpg"
+        : "dilla-syam-memory.webm";
+
+    link.click();
+  }
+
+  function uploadMemory() {
+    if (!preview) return;
+
+    setGallery((prev) => [preview, ...prev]);
+    setPreview(null);
+
+    alert("Uploaded to gallery 🌸");
+  }
+
+  if (page === "home") {
+    return (
+      <main className="min-h-screen bg-[#fff9f2] px-4 py-8 text-stone-700">
+        <div className="mx-auto flex min-h-[90vh] max-w-5xl flex-col items-center justify-center text-center">
+          <p className="mb-4 text-xs tracking-[0.25em] text-[#9cab97] uppercase sm:text-sm">
+            Wedding Memory Garden
+          </p>
+
+          <h1 className="font-serif text-5xl leading-tight text-stone-800 sm:text-7xl md:text-8xl">
+            Dilla <span className="text-[#b7c4b2]">&</span> Syam
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+
+          <p className="mt-5 max-w-xl text-base leading-7 text-stone-600 sm:text-lg">
+            Capture sweet moments, upload memories, and watch them appear live
+            during the wedding celebration 🌸
+          </p>
+
+          <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <button
+              onClick={() => setPage("camera")}
+              className="w-full rounded-full bg-[#b7c4b2] px-8 py-4 text-base font-medium text-white shadow-lg transition hover:bg-[#9cab97] sm:w-auto"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Capture a Memory
+            </button>
+
+            <button
+              onClick={() => setPage("gallery")}
+              className="w-full rounded-full border border-[#d8cce6] bg-white/80 px-8 py-4 text-base font-medium shadow-sm transition hover:bg-white sm:w-auto"
             >
-              Learning
-            </a>{" "}
-            center.
+              View Live Gallery
+            </button>
+          </div>
+
+          <div className="mt-10 w-full rounded-[2rem] border border-white/70 bg-white/50 p-3 shadow-lg backdrop-blur sm:p-6">
+            <img
+              src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1400&auto=format&fit=crop"
+              alt="Wedding"
+              className="h-[260px] w-full rounded-[1.5rem] object-cover sm:h-[400px]"
+            />
+          </div>
+
+          <p className="mt-6 text-xs text-stone-500 sm:text-sm">
+            12 October 2026 · #DillaSyamForever
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </main>
+    );
+  }
+
+  if (page === "camera") {
+    return (
+      <main className="min-h-screen bg-[#fff9f2] px-4 py-6 text-stone-700">
+        <button
+          onClick={() => setPage("home")}
+          className="mb-5 text-sm text-stone-500"
+        >
+          ← Back
+        </button>
+
+        <div className="mx-auto max-w-5xl rounded-[2rem] bg-white/75 p-4 shadow-xl backdrop-blur sm:p-6">
+          <h2 className="text-center font-serif text-4xl text-stone-800 sm:text-5xl">
+            Capture a Memory
+          </h2>
+
+          <p className="mt-2 text-center text-sm text-stone-500">
+            Take a photo or record a short 10-second video.
+          </p>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
+            <div className="overflow-hidden rounded-[1.5rem] bg-black">
+              {preview ? (
+                preview.type === "image" ? (
+                  <img
+                    src={preview.url}
+                    alt="Preview"
+                    className="h-[420px] w-full object-cover sm:h-[500px]"
+                  />
+                ) : (
+                  <video
+                    src={preview.url}
+                    controls
+                    className="h-[420px] w-full object-cover sm:h-[500px]"
+                  />
+                )
+              ) : (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="h-[420px] w-full object-cover sm:h-[500px]"
+                />
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {!stream && (
+                <>
+                  <button
+                    onClick={() => openCamera(false)}
+                    className="rounded-2xl bg-[#b7c4b2] px-6 py-4 font-medium text-white"
+                  >
+                    Open Photo Camera
+                  </button>
+
+                  <button
+                    onClick={() => openCamera(true)}
+                    className="rounded-2xl bg-[#d8cce6] px-6 py-4 font-medium text-stone-700"
+                  >
+                    Open Video Camera
+                  </button>
+                </>
+              )}
+
+              {stream && !preview && (
+                <>
+                  <button
+                    onClick={takePhoto}
+                    className="rounded-2xl bg-[#b7c4b2] px-6 py-4 font-medium text-white"
+                  >
+                    Take Photo
+                  </button>
+
+                  {!recording ? (
+                    <button
+                      onClick={startRecording}
+                      className="rounded-2xl bg-[#d8cce6] px-6 py-4 font-medium text-stone-700"
+                    >
+                      Record 10s Video
+                    </button>
+                  ) : (
+                    <button
+                      onClick={stopRecording}
+                      className="rounded-2xl bg-red-300 px-6 py-4 font-medium text-white"
+                    >
+                      Stop Recording
+                    </button>
+                  )}
+                </>
+              )}
+
+              {preview && (
+                <>
+                  <button
+                    onClick={saveToPhone}
+                    className="rounded-2xl border border-stone-200 bg-white px-6 py-4 font-medium"
+                  >
+                    Save to Phone
+                  </button>
+
+                  <button
+                    onClick={uploadMemory}
+                    className="rounded-2xl bg-[#b7c4b2] px-6 py-4 font-medium text-white"
+                  >
+                    Upload to Live Gallery
+                  </button>
+
+                  <button
+                    onClick={() => setPreview(null)}
+                    className="rounded-2xl bg-stone-100 px-6 py-4 font-medium"
+                  >
+                    Retake
+                  </button>
+                </>
+              )}
+
+              <p className="mt-3 rounded-2xl bg-[#f8d7da]/40 p-4 text-sm leading-6 text-stone-600">
+                Tip: Hold your phone vertically for best results.
+              </p>
+            </div>
+          </div>
         </div>
       </main>
-    </div>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#fff9f2] px-4 py-6 text-stone-700">
+      <button
+        onClick={() => setPage("home")}
+        className="mb-5 text-sm text-stone-500"
+      >
+        ← Back
+      </button>
+
+      <div className="text-center">
+        <h2 className="font-serif text-5xl text-stone-800 sm:text-6xl">
+          Live Wedding Gallery
+        </h2>
+
+        <p className="mt-3 text-sm text-stone-500 sm:text-base">
+          Memories uploaded by guests 🌸
+        </p>
+      </div>
+
+      <div className="mx-auto mt-8 grid max-w-6xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {gallery.length === 0 && (
+          <div className="col-span-full rounded-[2rem] bg-white/70 p-8 text-center shadow">
+            <p className="text-stone-500">No memories uploaded yet 🌸</p>
+          </div>
+        )}
+
+        {gallery.map((item) => (
+          <div
+            key={item.id}
+            className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-lg"
+          >
+            {item.type === "image" ? (
+              <img
+                src={item.url}
+                alt="Wedding memory"
+                className="h-[320px] w-full rounded-[1.5rem] object-cover sm:h-[350px]"
+              />
+            ) : (
+              <video
+                src={item.url}
+                controls
+                className="h-[320px] w-full rounded-[1.5rem] object-cover sm:h-[350px]"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </main>
   );
 }
